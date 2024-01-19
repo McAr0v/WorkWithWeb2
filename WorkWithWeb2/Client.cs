@@ -8,25 +8,57 @@ using System.Threading.Tasks;
 
 namespace WorkWithWeb2
 {
+
     internal class Client
     {
 
-        public static void SendMsg(string name)
-        {
+        static private CancellationTokenSource cts2 = new CancellationTokenSource();
+        static private CancellationToken ct2 = cts2.Token;
 
+        public static async Task SendMsg(string name)
+        {
+            bool worked = true;
             IPEndPoint ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 16874);
             UdpClient udpClient = new UdpClient();
-            Message msg = new Message(name, "Привет");
 
-            string responseMsgJs = msg.ToJson();
+            try
+            {
+                while (!ct2.IsCancellationRequested)
+                {
+                    Console.Write("Введите сообщение или Exit для завершения: ");
 
-            byte[] responseData = Encoding.UTF8.GetBytes(responseMsgJs);
-            udpClient.Send(responseData, ep);
-            byte[] answerData =  udpClient.Receive(ref ep);
-            string answerMsgJs = Encoding.UTF8.GetString(answerData);
-            Message answerMsg = Message.FromJson(answerMsgJs);
+                    string text = Console.ReadLine();
 
-            Console.WriteLine(answerMsg.ToString());
+                    Message msg = new Message(name, text ?? "Привет");
+
+                    string responseMsgJs = msg.ToJson();
+
+                    byte[] responseData = Encoding.UTF8.GetBytes(responseMsgJs);
+
+                    await udpClient.SendAsync(responseData, responseData.Length, ep);
+
+                    byte[] answerData = udpClient.Receive(ref ep);
+                    string answerMsgJs = Encoding.UTF8.GetString(answerData);
+                    Message answerMsg = Message.FromJson(answerMsgJs);
+
+                    Console.WriteLine(answerMsg.ToString());
+
+                    if (text.ToLower() == "exit")
+                    {
+                        Console.WriteLine("Operation was canceled.");
+                        ct2.ThrowIfCancellationRequested();
+                        break;
+
+                    }
+
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Environment.Exit(0);
+            }
+
+            Environment.Exit(0);
 
         }
     }
