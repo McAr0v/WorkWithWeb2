@@ -14,10 +14,22 @@ namespace WorkWithWeb2
             }
             else
             {
-                for (int i = 0; i < 10; i++)
-                {
-                    await Client.SendMsg(args[0]);
-                }
+                Task sendlerTask = Task.Run(async () => await Client.ClientSendler(args[0]));
+
+                // Дождаться завершения ClientSendler
+                //await sendlerTask;
+
+                // Запустить ClientListener в отдельном потоке
+                Task listenerTask = Task.Run(async () => await Client.ClientListener());
+
+                await Task.WhenAll(sendlerTask, listenerTask);
+
+                // await Client.ClientSendler(args[0]);
+
+                // await Client.ClientListener();
+
+
+                //await Client.SendMsg(args[0]);
 
             }
 

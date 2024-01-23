@@ -9,7 +9,8 @@ namespace WorkWithWeb2
 {
     internal class Message
     {
-        public string Name { get; set; }
+        public string FromName { get; set; }
+        public string ToName { get; set; }
         public string Text { get; set; }
 
         public DateTime Stime { get; set; }
@@ -18,7 +19,7 @@ namespace WorkWithWeb2
         {
             return JsonSerializer.Serialize(this);
         }
-        //
+        
         public static Message? FromJson(string somemessage)
         {
             return JsonSerializer.Deserialize<Message>(somemessage);
@@ -26,7 +27,7 @@ namespace WorkWithWeb2
 
         public Message(string nikname, string text)
         {
-            this.Name = nikname;
+            this.FromName = nikname;
             this.Text = text;
             this.Stime = DateTime.Now;
         }
@@ -35,8 +36,10 @@ namespace WorkWithWeb2
 
         public override string ToString()
         {
-            return $"Получено сообщение от {Name} ({Stime.ToShortTimeString()}): \n {Text}";
+            return $"Получено сообщение от {FromName} ({Stime.ToShortTimeString()}): \n {Text}";
         }
 
     }
+
+
 }
